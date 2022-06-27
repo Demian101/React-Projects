@@ -4,7 +4,7 @@
   "info": {
     "singularName": "student",
     "pluralName": "students",
-    "displayName": "Student"
+    "displayName": "student"
   },
   "options": {
     "draftAndPublish": true
@@ -14,14 +14,14 @@
     "name": {
       "type": "string"
     },
-    "email": {
-      "type": "email"
+    "gender": {
+      "type": "string"
     },
     "age": {
       "type": "integer"
     },
-    "create_time": {
-      "type": "date"
+    "address": {
+      "type": "string"
     }
   }
 }

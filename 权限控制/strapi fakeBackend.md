@@ -1,13 +1,13 @@
 npm
 
 ```
-npx create-strapi-app@latest my-project --quickstart
+npx create-strapi-app@latest fakeBackend --quickstart
 ```
 
 yarn
 
 ```
-yarn create strapi-app my-project --quickstart
+yarn create strapi-app fakeBackend --quickstart
 ```
 
 ----
@@ -34,6 +34,13 @@ npm run start
 ```
 
 
+
+```bash
+Strapi 管理密码 :
+* Demian
+* soda@sodo.com
+* QXkz(*76
+```
 
 
 
