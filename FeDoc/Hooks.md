@@ -2007,6 +2007,160 @@ function Main() {
 
 
 
+# useImperativeHandle
+
+> Imperative [ɪm'perətɪv] adj. 紧要的；必要的
+
+引用本文件中的 DOM 对象可以使用 useRef , 引用其他组件中的 DOM 对象该怎么办呢 ?  答案是使用  `forwardRef()`  : 
+
+- `React.forwardRef()` :  可以用来指定组件向外部暴露的 ref 
+
+- `useImperativeHandle ` :  可以用来指定 ref 返回的值
+
+
+
+在 React 中可以通过 `forwardRef` 来指定要暴露给**外部组件**的 ref：
+
+```react
+// MyInput.js
+const MyInput = React.forwardRef((props, ref) => {
+  const inputRef = useRef();
+  return (
+    <input ref={inputRef} type="text"/>
+  )
+});
+
+// App.js
+const App = () => {
+  const someRef = useRef();
+  useEffect(()=>{
+        someRef.current.innerText = 'Some' + count;
+    });
+  return (  ...
+    <MyInput ref={someRef}/>  )
+}
+```
+
+上例中，MyInput 组件将 `<input>` 的 ref 作为组件的 ref 向外部暴露，其他组件在使用 MyInput 时，就可以通过 ref 属性访问：
+
+- 可以通过 useEffect 中的 `someRef.current.innerText `  , 直接修改 `MyInput` 组件中 `<input> ` Dom 对象的 innerText 
+- 上面这么做其实很危险 : 
+  - 外部 影响组件内部, 组件本身失去了对自己内部内容的控制, 可维护性变得很低
+
+
+
+通过 `useImperativeHandle` 可以手动的指定 ref 要暴露的对象的值
+
+- `useImperativeHandle` 的第二个参数是一个函数，函数的返回值会自动赋值给 ref（current 属性）。
+
+```react
+const MyInput = React.forwardRef((props, ref) => {
+  const inputRef = useRef();
+
+  // useImperativeHandle 可以用来指定 ref 返回的值
+  useImperativeHandle(ref, ()=>{
+  // 回调函数的返回值，会成为 ref 的值
+    return {
+      changeInpValue(val){
+        inputRef.current.value = val;
+      }
+    };
+  });  
+  return ( <div> <input ref={inputRef} type="text"/> </div> )
+}
+  
+// App.js
+const App = (){
+  const someRef = useRef();
+
+  // someRef.current 拿到外部组件的 <input> 元素后, 只能调用其 changeInpValue 方法
+  // 无法对其做其他僭越操作, 这无疑是较为安全的
+  useEffect(()=>{
+    someRef.current.changeInpValue(count);
+  });
+  return (
+    <Some ref={someRef}/>
+  )
+}
+```
+
+这么做的好处 : 
+
+- 不会返回一整个 Dom 对象, 而是返回一个操作 Dom 对象的方法
+  - 你想想自己把组件内的某标签的一整个 DOM 都交出去了 ,人家在 DOM 对象上干啥根本就不能预料
+  - 现在我们限定一个方法 : 你只能调我的函数 , 我的函数里写了只能传值 , 那你就只能修改 DOM 的 value 值 , 权限清晰
+- 对外有限的暴露 , 让 DOM 的操作权限和逻辑更加清晰
+
+
+
+
+
+# useEffect: useLayoutEffect/ useInsertionEffect
+
+useLayoutEffect的方法签名和useEffect一样，功能也类似。
+
+不同点在于，useLayoutEffect 的执行时机要早于useEffect，它会在DOM改变后调用。在老版本的React中它和useEffect的区别比较好演示，React18中，useEffect的运行方式有所变化，所以二者区别不好演示。
+
+<img src="http://imagesoda.oss-cn-beijing.aliyuncs.com/Sodaoo/2022-06-28-060807.jpg" style="zoom:67%;" />
+
+useLayoutEffect使用场景不多，实际开发中，在effect中需要修改元素样式，且使用useEffect会出现闪烁现象时可以使用useLayoutEffect进行替换。
+
+
+
+# UseDebugValue
+
+>  作用: 给不同的自定义钩子 Hook 打标签，标签会在React开发工具中显示 ( 如 Chrome 控制栏)，用来调试自定义钩子，不常用。
+
+```react
+// ./hooks/useMyHook.js
+import {useDebugValue, useEffect} from "react";
+const useMyHook = () => {
+    useDebugValue('哈哈');
+    useEffect(()=>{
+        console.log('自定义钩子的代码');
+    });
+
+};
+export default useMyHook;
+
+// App.js
+const App = () => {
+  useMyHook();
+  return ( ..) 
+}
+```
+
+![](http://imagesoda.oss-cn-beijing.aliyuncs.com/Sodaoo/2022-06-28-062000.png)
+
+如上图 , 可以显示一个 Label 表示是 MyHook 而不是其他的什么 Hook  .....
+
+
+
+## UseDeferredValue
+
+> 设置延迟值
+
+useDeferredValue用来设置一个延迟的state，比如我们创建一个state，并使用useDeferredValue获取延迟值：
+
+```react
+const [queryStr, setQueryStr] = useState('');
+const deferredQueryStr = useDeferredValue(queryStr);
+```
+
+上边的代码中queryStr就是一个常规的state，deferredQueryStr就是queryStr的延迟值。设置延迟值后每次调用setState后都会触发两次组件的重新渲染。第一次时，deferredQueryStr的值是queryStr修改前的值，第二次才是修改后的值。换句话，延迟值相较于state来说总会慢一步更新。
+
+延迟值可以用在这样一个场景，一个state需要在多个组件中使用。一个组件的渲染比较快，而另一个组件的渲染比较慢。这样我们可以为该state创建一个延迟值，渲染快的组件使用正常的state优先显示。渲染慢的组件使用延迟值，慢一步渲染。当然必须结合React.memo或useMemo才能真正的发挥出它的作用。
+
+
+
+# UseTransition
+
+当我们在组件中修改state时，会遇到复杂一些的state，当修改这些state时，甚至会阻塞到整个应用的运行，为了降低这种state的影响，React为我们提供了useTransition，**通过useTransition可以降低setState的优先级**。
+
+useTransition会返回一个数组，数组中有两个元素，第一个元素是isPending，它是一个变量用来记录transition是否在执行中。第二个元素是startTransition，它是一个函数，可以将setState在其回调函数中调用，这样setState方法会被标记为transition并不会立即执行，而是在其他优先级更高的方法执行完毕，才会执行。
+
+除了useTransition外，React还直接为为我们提供了一个startTransition函数，在不需要使用isPending时，可以直接使用startTransition也可以达到相同的效果。
+
 
 
 # Custom Hooks
