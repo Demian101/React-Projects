@@ -1724,6 +1724,8 @@ export default function App() {
 
 # useMemo  (Memory)
 
+## React.memo()
+
 React组件会在两种情况下发生重新渲染。
 
 - 当组件自身的state发生变化时。
@@ -1762,6 +1764,20 @@ export default React.memo(B);
 进行 React.memo 包装后 , 返回的B组件就增加了缓存功能，只有当 B 组件的 props 属性发生变化时，才会触发组件的重新渲染。
 
 `memo` 只会根据 `props` 判断是否需要重新渲染，和 state 和 context 无关，state 或 context 发生变化时，组件依然会正常的进行重新渲染。
+
+
+
+## useMemo
+
+useMemo和useCallback十分相似，useCallback用来缓存函数对象，useMemo用来缓存函数的执行结果。在组件中，会有一些函数具有十分的复杂的逻辑，执行速度比较慢。闭了避免这些执行速度慢的函数返回执行，可以通过useMemo来缓存它们的执行结果，像是这样：
+
+```
+const result = useMemo(()=>{
+    return 复杂逻辑函数();
+},[依赖项])
+```
+
+useMemo中的函数会在依赖项发生变化时执行，注意！是执行，这点和useCallback不同，useCallback是创建。执行后返回执行结果，如果依赖项不发生变化，则一直会返回上次的结果，不会再执行函数。这样一来就避免复杂逻辑的重复执行。
 
 
 
