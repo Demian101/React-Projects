@@ -1,0 +1,24 @@
+        <svg
+          width="256"
+          height="256"
+          viewBox="0 0 256 256"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="absolute right-0 -z-10"
+        >
+          <circle cx="128" cy="128" r="128" fill="url(#paint0_linear_0_22)" />
+          <defs>
+            <linearGradient
+              id="paint0_linear_0_22"
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="256"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop stop-color="white" />
+              <stop offset="0.774017" stop-color="#EAEAEA" />
+              <stop offset="1" stop-color="#DFDFDF" />
+            </linearGradient>
+          </defs>
+        </svg>
