@@ -42,6 +42,7 @@ function Task() {
     }
   }
 
+  const aaa = taskStore.isAll
   return (
     <section className="todoapp">
       <header className="header">

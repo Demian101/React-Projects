@@ -1556,7 +1556,7 @@ const Sidebar = () => {
 
   return (
     // isSidebarOpen 为 true : className='sidebar show-sidebar'  显示侧边栏
-    // isSidebarOpen 为 false: className='sidebar'  不显示侧边栏
+    // isSidebarOpen					 为 false: className='sidebar'  不显示侧边栏
     <aside className={`${isSidebarOpen ? 'sidebar show-sidebar' : 'sidebar'}`}> {/* false */} 
       <div className='sidebar-header'>
         <img src={logo} className='logo' alt='coding addict' />

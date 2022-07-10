@@ -16,6 +16,7 @@ class TaskStore {
   ]
   constructor() {
     makeAutoObservable(this)
+    console.log("..", this.list)
   }
 
   // 单选操作
