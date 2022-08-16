@@ -25,3 +25,34 @@
 
 
 
+数据状态管理: DRY 原则
+
+1. 能计算得到的状态就不要单独存储
+2. 组件尽量无状态,所需数据通过props获取
+
+
+
+
+
+
+
+### Object 在 return 中的遍历
+
+```react
+export default function Sidebar() {
+  const componentsPath = {
+    'xx' : 3,
+    'yy' : 4,
+  }
+
+  return (
+    <div>
+      {/* 对象插入 React 中的遍历方法 */}
+      { Object.keys(componentsPath).map((key, value) => {
+        return (<button key={key} > {value} </button>)
+      }) }
+    </div>
+  )
+}
+```
+

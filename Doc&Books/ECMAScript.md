@@ -16,7 +16,7 @@ JavaScript 是大家所了解的语言名称，但是这个语言名称是商标
 
 # DOM
 
-## 事件监听程序 Listener
+**事件监听程序 Listener**
 
 ```
 Listener(event, function)
@@ -142,9 +142,9 @@ console.log(companies)  // ["Facebook", " Google", " Microsoft", " Apple"]
 
 
 
-## 区分 null 和 undefined 
+-----
 
-
+**区分 null 和 undefined** 
 
 ```js
 typeof(null)      // object (因为遗留原因类型不是 null)
@@ -1860,387 +1860,13 @@ Person.prototype.fullNameReversed = function() {
 
 
 
-# JS 异步、async函数(await)
 
-Javascript语言的执行环境是"单线程"（single thread）。
 
-所谓"单线程"，就是指一次只能完成一件任务。如果有多个任务，就必须排队，前面一个任务完成，再执行后面一个任务，以此类推。
 
-这种模式的好处是实现起来比较简单，执行环境相对单纯；坏处是只要有一个任务耗时很长，后面的任务都必须排队等着，会拖延整个程序的执行。常见的浏览器无响应（假死），往往就是因为某一段Javascript代码长时间运行（比如死循环），导致整个页面卡在这个地方，其他任务无法执行。
 
-为了解决这个问题，Javascript语言将任务的执行模式分成两种：同步（Synchronous）和异步（Asynchronous）。
 
-"同步模式"就是上一段的模式，后一个任务等待前一个任务结束，然后再执行，程序的执行顺序与任务的排列顺序是一致的、同步的；
 
-**"异步模式"则完全不同，每一个任务有一个或多个回调函数（callback），前一个任务结束后，不是执行后一个任务，而是执行回调函数，后一个任务则是不等前一个任务结束就执行，所以程序的执行顺序与任务的排列顺序是不一致的、异步的。**
-
-"异步模式"非常重要。在浏览器端，耗时很长的操作都应该异步执行，避免浏览器失去响应，最好的例子就是Ajax操作。在服务器端，"异步模式"甚至是唯一的模式，因为执行环境是单线程的，如果允许同步执行所有 http 请求，服务器性能会急剧下降，很快就会失去响应。
-
-
-
-## 异步编程方法
-
-**一、回调函数**
-
-`callback()` 是异步编程最基本的方法。
-
-假定有两个函数 `f1` 和 `f2` ，`f2()` 等待 `f1()` 的执行结果，如果 `f1()` 很耗时，可以把 `f2` 写成 `f1` 的回调函数。
-
-```js
-　　function f1(callback){
-　　　　setTimeout(function () {
-　　　　　　// f1的任务代码
-
-　　　　　　callback();   // f2 被写成了 callback()  , 1 s 后执行 callback，这里可能没有等 f1 执行完就开始执行了。
-　　　　}, 1000);
-　　}
-```
-
-执行代码就变成下面这样：
-
-```js
-　f1(f2);
-```
-
-采用这种方式，把同步操作变成了异步操作，`f1` 不会堵塞程序运行，相当于先执行程序的主要逻辑，将耗时的操作推迟执行。
-
-回调函数的优点是简单、容易理解和部署，缺点是不利于代码的阅读和维护，各个部分之间高度[耦合](https://en.wikipedia.org/wiki/Coupling_(computer_programming))（Coupling），流程会很混乱，而且每个任务只能指定一个回调函数。
-
-
-
-**二、事件监听**
-
-另一种思路是采用事件驱动模式。任务的执行不取决于代码的顺序，而取决于某个事件是否发生。
-
-还是以 `f1` 和 `f2` 为例。首先，为 `f1` 绑定一个事件（这里采用的 jQuery 的[写法](https://api.jquery.com/on/)）。
-
-```js
-　　f1.on('done', f2);
-```
-
-上面这行代码的意思是，当 `f1` 发生 done 事件，就执行 `f2` 。 对 `f1` 进行改写：
-
-```js
-　　function f1(){
-
-　　　　setTimeout(function () {
-
-　　　　　　// f1的任务代码
-　　　　　　f1.trigger('done');
-　　　　}, 1000);           // 等 1 s ，就触发 done 事件。
-　　}
-```
-
-`f1.trigger('done')` 表示，执行完成后，立即触发 done 事件，从而开始执行 `f2` 。
-
-这种方法的优点是比较容易理解，可以绑定多个事件，每个事件可以指定多个回调函数，而且可以**去耦合**  (Decoupling），有利于实现模块化。缺点是整个程序都要变成事件驱动型，运行流程会变得很不清晰。
-
-
-
-**三、发布/订阅**
-
-上一节的"事件"，完全可以理解成"信号"。
-
-我们假定，存在一个"信号中心"，某个任务执行完成，就向信号中心"发布"（publish）一个信号，其他任务可以向信号中心"订阅"（subscribe）这个信号，从而知道什么时候自己可以开始执行。这就叫做["发布/订阅模式"](https://en.wikipedia.org/wiki/Publish-subscribe_pattern)（publish-subscribe pattern），又称["观察者模式"](https://en.wikipedia.org/wiki/Observer_pattern)（observer pattern）。
-
-这个模式有多种[实现](https://msdn.microsoft.com/en-us/magazine/hh201955.aspx)，下面采用的是Ben Alman的[Tiny Pub/Sub](https://gist.github.com/661855)，这是jQuery的一个插件。
-
-首先，f2向 "信号中心" jQuery 订阅 "done" 信号。
-
-```js
-　jQuery.subscribe("done", f2);
-```
-
-然后，f1进行如下改写：
-
-```js
-　　function f1(){
-
-　　　　setTimeout(function () {
-
-　　　　　　// f1的任务代码
-　　　　　　**jQuery.publish("done");**
-　　　　}, 1000);
-　　}
-```
-
-
-
-`jQuery.publish("done") `的意思是，`f1` 执行完成后，向"信号中心"jQuery发布"done"信号，从而引发f2的执行。
-
-此外，`f2` 完成执行后，也可以取消订阅（`unsubscribe`）。
-
-```js
-　jQuery.unsubscribe("done", f2);
-```
-
-
-
-这种方法的性质与"事件监听"类似，但是明显优于后者。因为我们可以通过查看"消息中心"，了解存在多少信号、每个信号有多少订阅者，从而监控程序的运行。
-
-
-
-## **Promises对象**
-
-`Promises` 对象是 `CommonJS` 工作组提出的一种规范，目的是为异步编程提供统一接口。
-
-promise 是表示异步操作完成或失败的对象。可以说，它代表了一种中间状态。 本质上，这是浏览器说“我保证尽快给您答复”的方式，因此得名 “promise”。
-
-简单说，它的思想是，每一个异步任务返回一个 Promise 对象，该对象有一个 then 方法，允许指定回调函数。
-
-```js
-fetch('products.json').then(function(response) {
-  return response.json();
-}).then(function(json) {
-  products = json;
-  initialize();
-}).catch(function(err) {
-  console.log('Fetch problem: ' + err.message);
-});
-```
-
-promise 是表示异步操作[完成] 或 [失败] 的对象。
-
-它感觉有点像运行中的薛定谔的猫。2种可能都还没有发生，因此 fetch 操作等待浏览器在将来完成该操作的结果。
-
-我们有三个代码块链接到 `fetch()` 的末尾：
-
-- 两个 `then()` 块。两者都包含一个回调函数，如果前一个操作成功，该函数将运行，并且每个回调都接收前一个成功操作的结果作为输入，因此您可以继续对它执行其他操作。每个 `.then()` 块返回另一个promise，这意味着可以将多个 `.then() ` 块链接到另一个块上，这样就可以依次执行多个异步操作。
-- 如果其中任何一个 `then()` 块失败，则在末尾运行 `catch()` 块 —— 与同步 `try...catch` 类似，`catch()` 提供了一个错误对象，可用来报告发生的错误类型。但是请注意，同步 `try...catch` 不能与 `promise` 一起工作，尽管它可以与 `async/await` 一起工作，稍后您将了解到这一点。
-
-像 promise 这样的异步操作被放入**事件队列**中，**事件队列**在主线程完成处理后运行，这样它们就不会阻止后续 JavaScript 代码的运行。排队操作将尽快完成，然后将结果返回到 JS 环境。
-
-promises 与旧式 callbacks 有一些相似之处。它们本质上是一个返回的对象，您可以将回调函数附加到该对象上，而不必将回调作为参数传递给另一个函数。
-
-然而，Promise是专门为异步操作而设计的，与旧式回调相比具有许多优点:
-
-1. 您可以使用多个 then() 操作将多个异步操作链接在一起，并将其中一个操作的结果作为输入传递给下一个操作。这种链接方式对回调来说要难得多，会使回调以混乱的“末日金字塔”告终。 (也称为回调地狱)。
-2. Promise总是严格按照它们放置在事件队列中的顺序调用。
-   错误处理要好得多——所有的错误都由块末尾的一个 `.catch()` 块处理，而不是在“金字塔”的每一层单独处理。
-
-
-
-
-
-## 异步代码的本质
-
-```javascript
-console.log ('Starting');
-let image;
-
-fetch('coffee.jpg').then((response) => {
-  console.log('It worked :)')
-  return response.blob();
-}).then((myBlob) => {
-  let objectURL = URL.createObjectURL(myBlob);
-  image = document.createElement('img');
-  image.src = objectURL;
-  document.body.appendChild(image);
-}).catch((error) => {
-  console.log('There has been a problem with your fetch operation: ' + error.message);
-});
-
-console.log ('All done!');
-```
-
-1. 首先创建 `image`  变量。
-2. 最后一行代码 `All done`! 被率先打印到控制台 （因为 fetach 是是异步执行的、非阻塞的 ）
-3. `It worked :)`  被输出到控制台 console 。( fetch 没有报错，执行第一个 `.then` )
-4. 执行第二个 `.then` ，也没有报错，所以 catch 不会被执行。
-5. 执行完毕。
-
-
-
-## async、await
-
- async函数是[`AsyncFunction`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/AsyncFunction)构造函数的实例， 并且其中允许使用`await`关键字。`async`和`await`关键字让我们可以用一种更简洁的方式写出基于[`Promise`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise)的异步行为，而无需刻意地链式调用`promise`。
-
-在函数开头添加 async 使其成为异步函数：
-
-```js
-async function myFunction() {
-  // This is an async function
-}
-```
-
-在 async function 中，可以在调用返回 Promise 的函数之前使用 `await` 关键字。
-
-这使得代码在该点等待直到 `Promise` 被 settled，此时 `Promise`的 fulfilled value 被视为返回值，或者被 rejected 的值被抛出。这使您能用同步代码写异步。
-
-例如，我们可以使用它来重写我们的 fetch 示例：
-
-```javascript
-async function fetchProducts() {
-  try {
-    // after this line, our function will wait for the `fetch()` call to be settled
-    // the `fetch()` call will either return a Response or throw an error
-    const response = await fetch('https://mdn.github.io/learning-area/javascript/apis/fetching-data/can-store/products.json');
-    if (!response.ok) {  
-      throw new Error(`HTTP error: ${response.status}`);
-    }
-    // after this line, our function will wait for the `response.json()` call to be settled
-    // the `response.json()` call will either return the JSON object or throw an error
-    const json = await response.json();
-    console.log(json[0].name);
-  }
-  catch(error) {
-    console.error(`Could not get products: ${error}`);
-  }
-}
-
-fetchProducts();
-```
-
-在这里，我们调用了` await fetch()`，而不是得到一个 `Promise`，调用返回一个完整的 Response 对象，就像 `fetch()` 是一个同步函数一样！
-
-我们甚至可以使用 `try...catch` 块进行错误处理，就像代码是同步的一样。
-
-请注意，这个魔法只在 async 函数中起作用。
-
-
-
-多个 await 是异步执行的，比如：
-
-```js
-function test1() {
-	setTimeout( ()=> {
-		console.log(111);
-	}, 1000);
-}
-function test2() {
-	console.log(222);
-}
-async function test3() {
-	await test1();  // SetTime()
-	await test2();
-}
-test3();
-```
-
-结果输出是 222、111
-
-
-
-### await 等待 Promis ：
-
-await等待的东西分两种情况，promise 和非 promise，遇到 promise 会阻塞下边的代码，遇到非 promise 的会直接根据情况异步执行。
-
-```js
-function test1() {
-	return new Promise(resolve => {
-        setTimeout(() => {
-            console.log(111);
-            resolve();
-        }, 2000)
-    })
-}
-function test2(res) {
-	setTimeout(() => {
-	    console.log(222);
-	}, 1000);
-}
-async function test3() {
-    await test1();
-    await test2();
-}
-test3();
-
-// Output : 111、222
-
-// 过程：
-1. 执行 test1()，因为函数体里有 promise，所以阻塞后面的 await 代码，此时 test2() 不执行 （ 注意！！！ ）
-2. 运行 test1() 里的 setTimeout ，等待2s，输出111，运行resolve()
-3. 执行 test2()，等待 1s，输出222。
-```
-
-
-
-### async function 返回 Promise
-
-async function 返回 Promise ！ 所以可以这样：
-
-```js
-async function fetchProducts() {
-  try {
-    const response = await fetch('https://mdn.github.io/learning-area/javascript/apis/fetching-data/can-store/products.json');
-    if (!response.ok) {
-      throw new Error(`HTTP error: ${response.status}`);
-    }
-    const json = await response.json();
-    return json;
-  }
-  catch(error) {
-    console.error(`Could not get products: ${error}`);
-  }
-}
-
-const jsonPromise = fetchProducts();
-jsonPromise.then(
-  (json) => console.log(json[0].name)
-);
-```
-
-
-
-## Promise.all
-
-Promise.all() 方法将一个可迭代的 Promise 作为输入，并返回一个 Promise
-
-> 注：Array，Map，Set 都属于 ES6 的 iterable 类型
-
-返回值 Promise 被解析 (resolve) 为输入 Promise 的结果数组。 
-
-当输入的所有 Promise 都已 resolved ，或者 input iterable 不包含任何 promises 时，此返回的 Promise 将被解决(resolved)。 
-
-它会在任何输入的 promise 被拒绝或 non-promise 抛出错误时立即拒绝(reject)，并会在第一个拒绝 Message / Error 中拒绝。
-
-如下代码 , 将会在 2.5s (2.5 秒)  后返回 `Array [3, 42, "foo"]`
-
-```js
-const promise1 = Promise.resolve(3);
-const promise2 = 42;
-const promise3 = new Promise((resolve, reject) => {
-  setTimeout(resolve, 2500, 'foo');
-});
-
-Promise.all([promise1, promise2, promise3]).then((values) => {
-  console.log(values);
-});
-// expected output: Array [3, 42, "foo"]
-```
-
-
-
-返回值
-
-- 如果传入的参数是一个空的可迭代对象，则返回一个**已完成（already resolved）**状态的 [`Promise`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise)。
-- 如果传入的参数不包含任何 `promise`，则返回一个**异步完成（asynchronously resolved）**[`Promise`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise)。注意：Google Chrome 58 在这种情况下返回一个**已完成（already resolved）**状态的 [`Promise`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise)。
-- 其它情况下返回一个**处理中（pending）**的[`Promise`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise)。这个返回的 `promise` 之后会在所有的 `promise` 都完成或有一个 `promise` 失败时**异步**地变为完成或失败。 见下方关于“Promise.all 的异步或同步”示例。返回值将会按照参数内的 `promise` 顺序排列，而不是由调用 `promise` 的完成顺序决定。
-
-
-
-说明 :  此方法在集合多个 `promise` 的返回结果时很有用。
-
-
-
-
-
-# 零零散散
-
-字符串转数字 : 
-
-```js
-let a = +"123"
-
-$ typeof a
-$ 'number'
-```
-
-
-
-
-
-# prototype（原型对象）
+# JS prototype（原型对象）
 
 ```js
 function Person(first, last, age, eyecolor) {
@@ -2253,18 +1879,9 @@ function Person(first, last, age, eyecolor) {
 var myFather = new Person("John", "Doe", 50, "blue");
 var myMother = new Person("Sally", "Rally", 48, "green");
 
-// 在一个 `已存在构造器` 的对象中是不能添加新的属性：
+// Error:  `已存在构造器` 的对象中 不能添加新的属性：
+// 添加一个新属性，必须从构造器函数中开始修改 ：
 Person.nationality = "English";
-
-//要添加一个新的属性需要在在构造器函数中添加.
-
-function Person(first, last, age, eyecolor) {
-  this.firstName = first;
-  this.lastName = last;
-  this.age = age;
-  this.eyeColor = eyecolor;
-  this.nationality = "English";
-}
 ```
 
 
@@ -2281,7 +1898,9 @@ function Person(first, last, age, eyecolor) {
 
 JavaScript 对象有一个指向一个原型对象的链。当试图访问一个对象的属性时，它不仅仅在该对象上搜寻，还会搜寻该对象的原型，以及该对象的原型的原型，依次层层向上搜索，直到找到一个名字匹配的属性或到达原型链的末尾。
 
-so， 使用 **prototype** 属性就可以给对象的构造函数添加新的属性：
+
+
+so， 使用 **prototype** 属性就可以给对象的构造函数添加新的属性 / 方法：
 
 ```js
 function Person(first, last, age, eyecolor) {
@@ -2291,35 +1910,11 @@ function Person(first, last, age, eyecolor) {
   this.eyeColor = eyecolor;
 }
  
-Person.prototype.nationality = "English";
-```
+Person.prototype.nationality = "English";  // 加新的属性 attribute
 
-当然使用 prototype 属性也可以给对象的构造函数添加新的方法：
-
-```js
-function Person(first, last, age, eyecolor) {
-  this.firstName = first;
-  this.lastName = last;
-  this.age = age;
-  this.eyeColor = eyecolor;
-}
- 
-Person.prototype.name = function() {
+Person.prototype.name = function() {       // 添加新的方法 method
   return this.firstName + " " + this.lastName;
 };
-```
-
-
-
-```js
-const s = new Person('Simon', 'Willison');
-s.firstNameCaps(); // TypeError on line 1: s.firstNameCaps is not a function
-
-// 给 Person Object 加一个新的方法。
-Person.prototype.firstNameCaps = function() {
-  return this.first.toUpperCase();
-};
-s.firstNameCaps(); // "SIMON"
 ```
 
 
@@ -2502,6 +2097,19 @@ console.log( false || 3)      // 3
     // const obj2 = {...obj}; // 将obj在新的对象中展开，相当于浅复制
     const obj2 = {address: '花果山', ...obj, name: '猪八戒',};
     // obj2 : {address: '花果山', name: '猪八戒', age: 18, gender: '男'}
+```
+
+
+
+# 零零散散
+
+字符串转数字 : 
+
+```js
+let a = +"123"
+
+$ typeof a
+$ 'number'
 ```
 
 

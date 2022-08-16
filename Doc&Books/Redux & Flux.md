@@ -1,3 +1,7 @@
+
+
+
+
 ## 4 张动图解释为什么（什么时候）使用 Redux
 
 > 过早优化是万恶之源 —— Donald Knuth
@@ -57,9 +61,11 @@ React 使用[单向数据流](https://reactjs.org/docs/state-and-lifecycle.html#
 
 ## Flux与Redux
 
-Flux 是一种架构思想，专门解决软件的结构问题。它跟MVC架构是同一类东西，但是更加简单和 清晰。Flux存在多种实现(至少15种)
+Flux 是一种架构思想，专门解决软件的结构问题。它跟 MVC 架构是同一类东西，但是更加简单和 清晰。
 
-> https://github.com/voronianski/flux-comparison
+
+
+
 
 Facebook Flux 是用来构建客户端Web应用的应用架构。它利用单向数据流的方式来组合React 中的视图组件。它更像一个模式而不是一个正式的框架，开发者不需要太多的新代码 就可以快 速的上手Flux。
 

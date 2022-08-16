@@ -16,9 +16,17 @@ const App = () => {
 
             <Routes>
                 <Route path={"/"} element={<HomePage/>}/>
-                <Route path={"profile"} element={<NeedAuth><ProfilePage/></NeedAuth>}/>
+                <Route path={"profile"} element={
+                  <NeedAuth><
+                    ProfilePage/>
+                  </NeedAuth>}/
+                >
                 <Route path={"auth-form"} element={<AuthPage/>}/>
-                <Route path={"student"} element={<NeedAuth><StudentPage/></NeedAuth>}/>
+                <Route path={"student"} element={
+                  <NeedAuth>
+                    <StudentPage/>
+                  </NeedAuth>}/
+                >
             </Routes>
         </Layout>
     );
