@@ -4,6 +4,13 @@
 
 # this指向
 
+与其他编程语言不同，JavaScript 没有块作用域（在 C 中 `{}`  花括号是块作用域）。 JS  只有两个作用域，即全局作用域和局部作用域。
+
+1. local scope : variables declared **within a function** becomes local to that function
+2. global scope: variable defined **outside of function** becomes global and all scripts and functions can access it.
+
+
+
 对于this的指向，我的理解就是记住一句话，
 
 - 如果没有使用 apply 和 call 还有箭头函数的情况下，this 指向最后一次调用它的**对象**， 

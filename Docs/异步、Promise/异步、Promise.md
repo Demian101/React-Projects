@@ -313,13 +313,19 @@ function f1(){
 
 `Promises` 对象是 `CommonJS` 工作组提出的一种规范，目的是为异步编程提供统一接口。
 
-promise 是表示异步操作完成或失败的对象。可以说，它代表了一种中间状态。 本质上，这是浏览器说“我**保证**尽快给您答复”的方式，因此得名 “promise”。
+promise 是表示异步操作完成或失败的对象 , 代表一种中间状态。 本质上，这是浏览器说“我**保证**尽快给您答复”的方式，因此得名 “promise”。
 
-A promise that is either `resolved` or `rejected` is called “settled”,  as opposed to an initially “pending” promise.
+A promise that is either `resolved` or `rejected` is called “settled”,  as opposed to an initially `pending  promise.
 
 简单说，它的思想是，每一个异步任务返回一个 Promise 对象，该对象有一个 then 方法，允许指定回调函数。promise 是表示异步操作 [完成] 或 [失败] 的对象。
 
+
+
+下面我们阅读几段代码找找感觉: 
+
 阅读下面 `抽奖小任务 ` 例子 : 
+
+- `resolve(n)` 改变 PromiseState , 触发 `.then` 的回调函数 console.log ..
 
 ```js
 function rand(m, n) { return Math.ceil(Math.random() * (n-m+1)) + m-1;  }
@@ -340,7 +346,7 @@ const p = new Promise( (resolve, reject) => {
 // p.then( ()=>{}, ()=>{} )
 // p.then( value => {}, reason => {} )  <- value、reason 是形参，尽量遵守此规则
 p.then( (value)=>{
-  console.log("恭喜中奖，号码为" + value)
+  console.log("恭喜中奖，号码为" + value)  
 }, (reason)=>{
   console.log("再接再厉，号码为" + reason)
 })
@@ -359,14 +365,15 @@ p.then( (value)=>{
 const fs = require('fs')
 function mineReadFile(path){
   return new Promise((resolve, reject) => {
-    //读取文件
+    // 读取文件
     fs.readFile(path, (err, data) =>{
-      if(err) reject(err); // 失败，回传 reason
-      resolve(data);   // 读取成功，回传 data
+      if(err) reject(err);  // 失败，回传 reason
+      resolve(data);     // 读取成功，回传 data
     });
   });
 }
 
+// 调用 .then 方法;
 mineReadFile('./resource/content.txt').then( value=>{
   console.log(value.toString());
 }, reason => {
@@ -378,17 +385,17 @@ mineReadFile('./resource/content.txt').then( value=>{
 
 ### Promise 的状态
 
-Promise 实例对象中的属性 『PromiseState』保存着 promise 的状态改变 : 
-1. 由 pending 变为 resolved
-2. 由 pending 变为 rejected
-  - 说明:  只有这 2 种变化, 且一个 promise 对象只能改变一次
-  - 成功/失败 都会有一个结果数据:  成功的 res 一般约定为 `value`, 失败的结果数据一般称为 `reason` 
+Promise 实例对象中的属性 『PromiseState』保存着 `promise` 的状态改变  , 改变形式有 2 种 : 
+1. 由 `pending` 变为 `resolved` 
+2. 由 `pending` 变为 `rejected` 
+  - 只有这 2 种变化, 且一个 promise 对象只能改变一次
+  - 成功/失败 都会有一个结果数据:   成功的 res 一般约定为 `value`, 失败的结果数据一般称为 `reason` 
 
 
 
 > `pending`  未决定的
 >
-> `resolved`   / 或称为 `fulfilled`  成功
+> `resolved`   /  或称为 `fulfilled`  成功
 >
 > `rejected`  失败 
 
@@ -412,19 +419,19 @@ Promise 实例对象中的另一个属性 『PromiseResult』
 
 ### Promise 构造函数
 
-在前面的热身中, 我们已经有了一些感觉 : 
+在前面的热身中, 我们已经有了一些感觉, 下面来看 Promise 源码的构造函数 : 
 
-可以通过 new Promise 来实例化对象， 在 new 的时候，构造器需要接收 1 个函数类型参数 executor
+可以通过 new Promise 来实例化对象， 在 new 的时候，构造器需要接收 1 个函数类型参数 `executor` 
 
-1. executor 函数: 执行器 (resolve, reject) => {}
-  - resolve 函数: 内部定义成功时我们调用的函数 value => {}
-  - reject 函数: 内部定义失败时我们调用的函数 reason => {}
+1. `executor`  函数: 包含执行器` (resolve, reject) => {}` 
+  - resolve 函数: 内部定义成功时我们调用的函数 `value => {}` 
+  - reject 函数: 内部定义失败时我们调用的函数 `reason => {}` 
 
 >  executor 会在 Promise 内部**立即同步调用**
 
 
 
-如下: html 中使用的 Promise 已经被我们的自定义文件代替 , 我们将自己手动实现一个 Promise ; 
+来看例子 : 如下 html 中使用的 Promise 已经被我们的自定义文件代替 , 我们将自己手动实现一个 Promise ; 
 
 ```html
 <script src="./promise.js"></script>
@@ -456,6 +463,8 @@ Promise.prototype.then = function(onResolved, onRejected){
 }
 ```
 
+> 上面的源码只是一部分 , 更多的在后面 "Promise 源码解析" Part .
+
 
 
 ----
@@ -463,12 +472,12 @@ Promise.prototype.then = function(onResolved, onRejected){
 `Promise.prototype.then` 方法 :  (onResolved, onRejected) => {}
 
 then 接收 2 个参数 : 
-1. onResolved 函数:  成功的回调函数 (value) => {}
-2. onRejected 函数:  失败的回调函数 (reason) => {}
+1. `onResolved`  函数:  成功的回调函数  .` (value) => {}`
+2. `onRejected`  函数:  失败的回调函数 . ` (reason) => {}`
 
-说明: 指定用于得到成功 value 的成功回调和用于得到失败 reason 的失败回调
+说明:  指定用于得到成功 value 的成功回调和用于得到失败 reason 的失败回调
 
-`then`  返回一个新的 promise 对象
+`then`  会返回一个新的 promise 对象
 
 
 
@@ -477,7 +486,7 @@ then 接收 2 个参数 :
 Promise.prototype.then = function(onResolved, onRejected){
     // 要返回实例中的 PromiseState 属性 ( this 指向实例对象 p
     if(this.PromiseState === 'fulfilled'){
-        onResolved(this.PromiseResult);
+        onResolved(this.PromiseResult);  // this.PromiseResult 为 'OK'
     }
     if(this.PromiseState === 'rejected'){
         onRejected(this.PromiseResult);
@@ -491,7 +500,10 @@ Promise.prototype.then = function(onResolved, onRejected){
   )
 ```
 
-
+- 如上代码 : 
+  - `p.then` 接收 2 个函数作为参数  , `onResolved`  和 `onRejected`   , 分别作为 resolve 和 reject 的回调函数 ;
+  - 当 `PromiseState === 'fulfilled'`  时 , `onResolved`  所要执行的就是传进来的函数体 ; 
+  - 当 `PromiseState === 'rejected'`  时 , `onRejected`  所要执行的就是传进来的函数体 ; 
 
 
 
@@ -596,11 +608,11 @@ Promise {<pending>}
   reason: 将交给 onRejected()的失败数据
 */
 function Promise(excutor) {
-  const self = this;
+  const self = this;  // 避免作用域问题；
 
   self.PromiseState = 'Pending';
   self.PromiseResult = null;
-  self.callbacks = []  // 用来保存所有待调用的包含onResolved和onRejected回 调函数的对象的数组
+  self.callbacks = []  // 用来保存所有待调用的包含 onResolved 和 onRejected 回调函数的对象的数组
   
   function resolve(value) {
     if(self.PromiseState !== 'pending') {  // 如果状态不是 pending, 说明状态被改过了, 直接结束 
@@ -868,7 +880,7 @@ Promise.prototype.then = function(onResolved, onRejected){
 }
 ```
 
-
+- `this.PromiseResult`  里面存储的是 ` new Promise( ..  reject("Oh, No! ...")` 中的  `"Oh, No! ..."` 
 
 ```html
 <!-- html -->
@@ -897,8 +909,8 @@ console.log("res", res)
 如上 html : 
 
 - `p.then` return 一个 Promise , 此时 `p.then` 的返回情况由该 Promise 决定 ; 
-- `resolve("OK");` 将 Promise 实例的 `PromiseState` 设置为`fulfilled` 
-- 属性变化触发回调 , 我们 check Promise.prototype.then 中的代码 : 
+- `resolve("OK");` 将 Promise 实例的 `PromiseState` 设置为`fulfilled`  ; `PromiseResult` 设置为 `"Oh, No! ..."`
+- 属性变化触发回调 , 我们 check `Promise.prototype.then`  中的代码 : 
   - 进入 `if(this.PromiseState === 'fulfilled')`  分支 ;
 
 
@@ -919,33 +931,237 @@ console.log("res", res)
     }, 1000)
   });
   
-  const res = p.then( value =>{
-    throw("error.")
-  }, reason => {
-    throw 'error';
-  })
+  const res = p.then(value => {
+    console.log("value: ", value);
+    return 'oh Yeah';
+    // throw 'error';
+  }, reason=>{
+    console.warn("reason: ", reason);
+    return 'oh NO!';
+    // throw 'error';
+  });
   console.log(res);
 </script>
 ```
 
+如上, 因为 `setTimeout ` 的存在 ,  `reject("Error .... ");`  是异步代码 , 
 
+`console.log(res);` 是同步代码 , 所以输出会一直是如下的 `pending` 
 
 ```js
-// Promise.js
+/*  clg : 
+Promise{
+  PromiseResult: null
+  PromiseState: "pending"
+}  */ 
+```
+
+这和我们代码的初衷不符 , 所以要进行异步状态的修改 .
 
 
+
+-----
+
+异步代码的修改主要在下文的 Pending  部分 : 
+
+- 因为上文 html 的 `const res = p.then( value =>{ throw("error.") }`  执行时 ,  Promise 的状态还没发生改变 , 还是 Pending 
+- 所以
+
+```js
+// Promis.js
+Promise.prototype.then = function(onResolved, onRejected){
+  const self = this; // 避免作用域问题；
+  return new Promise((resolve, reject) => {
+    if(this.PromiseState === 'fulfilled'){  
+      ...   
+    }
+    if(this.PromiseState === 'rejected'){
+      ...
+    }
+
+    // 判断 pending 状态 （ 异步在这里执行；）
+    if(this.PromiseState === 'pending'){
+      //保存回调函数
+      this.callbacks.push({
+        'onResolved': function(){
+          try{
+            //执行成功回调函数
+            let result = onResolved(self.PromiseResult);  // self 指向调用对象
+            if(result instanceof Promise){  // 判断返回值是否是 Promise
+              result.then( v => { resolve(v); }, r=>{  reject(r); } )
+            }else{ 
+              resolve(result); 
+            }
+          }catch(e){
+            reject(e);
+          }
+        },
+        'onRejected': function(){
+          try{
+            let result = onRejected(self.PromiseResult);
+            if(result instanceof Promise){
+              result.then( v => { resolve(v); }, r=>{  reject(r); } )
+            }else{ resolve(result); }
+          }catch(e){ reject(e);  }
+        }
+      });
+    }
 ```
 
 
 
+① 下面 resolve 代码的执行情况 (动图)  :
+
+```html
+<!-- html --> 
+<script>
+  let p = new Promise((resolve, reject) => {
+    setTimeout({
+      resolve("OK !");    // <- 注意这里
+    }, 1000)
+  });
+  
+  const res = p.then(value => {
+    console.log("value: ", value);
+    return 'oh Yeah';
+  }, reason=>{
+    console.warn("reason: ", reason);
+    return 'oh NO!';
+  });
+  console.log(res);
+</script>
+```
+
+ 
+
+1. 首先执行 html 中 同步代码 : `console.log(res);` (此时是 ` Pending`) 
+
+2. 1s 后, 执行 html 中  `console.log("value: ", value);` 
+
+3. 点开 Promise , 因为回调中 return 了 `'oh Yeah';` , 此时 Promise 状态 已由 `Pending ` 状态改为 `fulfilled`
+
+   - > return 的是 非 Promise ,则状态为 `fulfilled` ; 
+
+![](http://imagesoda.oss-cn-beijing.aliyuncs.com/Sodaoo/2022-08-16-1.gif)
 
 
 
+② 下面 reject 代码的执行情况 (动图)  :
 
-与其他编程语言不同，JavaScript 没有块作用域（在 C 中 `{}`  花括号是块作用域）。 JS  只有两个作用域，即全局作用域和局部作用域。
+```html
+<!-- html --> 
+<script>
+  let p = new Promise((resolve, reject) => {
+    setTimeout({
+      reject("Error !");    // <- 注意这里
+    }, 1000)
+  });
+  
+  const res = p.then(value => {
+    console.log("value: ", value);
+    return 'oh Yeah';
+  }, reason=>{
+    console.warn("reason: ", reason);
+    return 'oh NO!';
+  });
+  console.log(res);
+</script>
+```
 
-1. local scope : variables declared **within a function** becomes local to that function
-2. global scope: variable defined **outside of function** becomes global and all scripts and functions can access it.
+1. 首先执行 html 中 同步代码 : `console.log(res);` (此时是 ` Pending`) 
+
+2. 1s 后, 执行 html 中  `console.log("reason: ", reason);` 
+
+3. 点开 Promise , 因为回调中 return 了 `'oh NO!'`  , 此时 Promise 状态 已由 `Pending ` 状态改为 `fulfilled`
+
+   - > return 的是 非 Promise ,则状态为 `fulfilled` ; 
+
+![](http://imagesoda.oss-cn-beijing.aliyuncs.com/Sodaoo/2022-08-16-2.gif)
+
+> 这个例子中 , 虽然 `new Promise` 中 reject 了  ,但是由于回调中 return 了 `'oh NO!';`  , 所以异步 Promise  最终的的 PromiseState 仍是  `fulfilled` , 谨记 !!
+
+
+
+### 6. 代码整合
+
+因为 Promise.js 中都使用了如下的代码逻辑, 
+
+```js
+  try{
+      
+      let result = type(self.PromiseResult);  //获取回调函数的执行结果
+     
+      if(result instanceof Promise){   //判断
+           
+          result.then(v => {  //如果是 Promise 类型的对象
+              resolve(v);
+          }, r=>{
+              reject(r);
+          })
+      }else{
+          
+          resolve(result);   //结果的对象状态为『成功』
+      }
+  }catch(e){
+      reject(e);
+  }
+```
+
+所以完全有必要做一层封装
+
+
+
+使用 `callback`  封装后的 `Promise.js 的 Promise.prototype.then`  : 
+
+```js
+Promise.prototype.then = function(onResolved, onRejected){
+    const self = this;
+    return new Promise((resolve, reject) => {
+        // 封装函数 wrapping function ;
+        function callback(type){  // type 可能是: { onResolved / onRejected } 的函数体
+            try{
+                let result = type(self.PromiseResult);  // 获取回调函数的执行结果
+                if(result instanceof Promise){  // 判断是否是 Promise 类型的对象
+                    result.then(  
+                        v => { resolve(v); }, 
+                        r => { reject(r); }
+                    )
+                } else {
+                    resolve(result);  // 非 Promise，结果的对象状态为『成功』
+                }
+            }catch(e){
+                reject(e);
+            }
+        }
+        if(this.PromiseState === 'fulfilled'){
+            callback(onResolved);
+        }
+        if(this.PromiseState === 'rejected'){
+            callback(onRejected);
+        }
+        //判断 pending 状态 （异步使用）：
+        if(this.PromiseState === 'pending'){
+            this.callbacks.push({    // 用一个 obj 保存回调函数
+                onResolved: function(){
+                    callback(onResolved);
+                },
+                onRejected: function(){
+                    callback(onRejected);
+                }
+            });
+        }
+    })
+}
+```
+
+
+
+### 7. catch 与异常穿透
+
+前面讲过 : `Promise.prototype.catch`  方法: (onRejected) => {}
+
+-  onRejected 函数: 失败的回调函数 (reason) => {}
+   - 只能用来指定失败的回调 ;
 
 
 
@@ -1001,9 +1217,139 @@ console.log ('All done!');
 
 
 
-## async、await
+# async、await
 
- async函数是[`AsyncFunction`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/AsyncFunction)构造函数的实例， 并且其中允许使用`await`关键字。`async`和`await`关键字让我们可以用一种更简洁的方式写出基于[`Promise`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise)的异步行为，而无需刻意地链式调用`promise`。
+async : 
+
+1. 函数的返回值为 promise 对象
+2. promise 对象的结果由 async 函数执行的返回值决定
+
+```js
+// 如下代码 : 
+async function main(){
+  //1. 如果返回值是一个非 Promise 类型的数据
+  // return 521;
+  //2. 如果返回的是一个Promise对象
+  // return new Promise((resolve, reject) => {
+  //     // resolve('OK');
+  //     reject('Error');
+  // });
+  //3. 抛出异常
+  throw "Oh NO";
+}
+
+let result = main();
+console.log(result);
+
+/*  
+return 521 的返回值 : 
+  Promise {<fulfilled>: 521}
+    [[PromiseState]]: "fulfilled"
+    [[PromiseResult]]: 521
+------------------------------------------------
+
+return new Promise 的返回值 : 
+  Promise {<rejected>: 'Error'}
+    [[PromiseState]]: "rejected"
+    [[PromiseResult]]: "Error"
+------------------------------------------------
+
+throw "Oh NO"; 的返回值:  (抛出值是 "Oh NO" , 状态是 rejected;)
+  Promise {<rejected>: 'Oh NO'}
+    [[PromiseState]]: "rejected"
+    [[PromiseResult]]: "Oh NO"
+*/
+```
+
+
+
+**await** 表达式
+
+1. await 右侧的表达式一般为 `promise` 对象, 但也可以是其它的值
+2. 如果表达式是 promise 对象, await 返回的是 promise 成功的值
+3. 如果表达式是其它值, 直接将此值作为 await 的返回值
+
+**注意 Attention :** 
+
+1. await 必须写在 async 函数中, 但 async 函数中可以没有 await
+2. 如果 await 的 promise 失败了, 就会抛出异常, 需要通过 try...catch 捕获处理
+
+```js
+// 1. 返回一个成功的 Promise 对象 : 
+async function main(){
+    let p = new Promise((resolve, reject) => {
+        resolve('OK');
+    })
+    let res = await p;
+}
+main();  // 返回 'OK'
+
+
+// 2. 返回一个失败的 Promise 对象: 
+async function main(){
+  let p = new Promise((resolve, reject) => {
+    reject('Error');
+  })
+  try { 
+    let res3 = await p;
+    console.log("res3", res3)
+  }
+  catch(e) { console.log(e);  }
+} 
+main();   // 返回 'Error'
+/*  
+  console.log("res3", res3)  不会执行,  
+    因为 try 没成功 ,  reject 的 Error 被 catch 捕获了
+*/
+```
+
+
+
+async 和 await 结合 : 
+
+```js
+/**
+ * resource  1.html  2.html 3.html 文件内容
+ */
+
+const fs = require('fs');
+const util = require('util');
+const mineReadFile = util.promisify(fs.readFile);
+
+// 回调地狱读取文件 :
+// fs.readFile('./resource/1.html', (err, data1) => {
+//     if(err) throw err;
+//     fs.readFile('./resource/2.html', (err, data2) => {
+//         if(err) throw err;
+//         fs.readFile('./resource/3.html', (err, data3) => {
+//             if(err) throw err;
+//             console.log(data1 + data2 + data3);
+//         });
+//     });
+// });
+
+//async 与 await 读取文件
+async function main(){
+    try{
+        let data1 = await mineReadFile('./resource/1.html');
+        let data2 = await mineReadFile('./resource/2.html');
+        let data3 = await mineReadFile('./resource/3.html');
+        console.log(data1 + data2 + data3);
+    }catch(e){
+        console.log(e.code);
+    }
+}
+
+main();
+```
+
+
+
+
+
+
+
+async函数是 [`AsyncFunction`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/AsyncFunction) 构造函数的实例， 并且其中允许使用`await`关键字。`async`和`await`关键字让我们可以用一种更简洁的方式写出基于[`Promise`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise)的异步行为，而无需刻意地链式调用 `promise`。
 
 在函数开头添加 async 使其成为异步函数：
 
@@ -1170,5 +1516,3 @@ Promise.all([promise1, promise2, promise3]).then((values) => {
 
 
 说明 :  此方法在集合多个 `promise` 的返回结果时很有用。
-
-``
