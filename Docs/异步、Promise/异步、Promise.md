@@ -137,7 +137,7 @@ cond(yes)->op2->op3
 op3(left)->sub(top)->op1
 ```
 
-
+### **3.1 主线程上添加宏任务和微任务**
 
 分析如下代码执行 : 
 
@@ -171,7 +171,7 @@ setTimeout...  */
 **第一轮 `event loop` 事件循环：**
 
 1. 整体 script 作为第一个宏任务进入主线程, 输出 `---- 开始 -----`
-2. 遇到 setTimeout，其回调函数被分发到宏任务 Event Queue中。记为 `setTimeout1`。
+2. 遇到 setTimeout，其回调函数 clg 被分发到宏任务 Event Queue中。记为 `setTimeout1`。
 3. 遇到 Promise，new Promise 直接执行，循环依次输出 0、1、2 。then 被分发到微任务 Event Queue 中。记为 `then1`。
 4. 继续往下，遇到 clg , 直接输出 `----结束----`，到此第一轮事件循环即将结束，会先看有没有产生出微任务，有依次按产生顺序执行
    - 发现有 `then1`，输出 `Promise`，当前微任务执行完毕，到此，第一轮事件循环结束。
@@ -184,6 +184,8 @@ setTimeout...  */
 
 
 
+下面代码和上面是一样的, 试着分析下 :
+
 ```js
 console.log(1)
 
@@ -193,6 +195,7 @@ let promise = new Promise(function(resolve,reject){
 }).then(function(data){    
   console.log(data)
 })
+
 setTimeout(function(){    
   console.log(4);
 })
@@ -200,112 +203,47 @@ console.log(5)
 // 上面代码的运行结果是 1 2 5 3 4
 ```
 
-setTimeout 是[宏任务](https://www.zhihu.com/search?q=宏任务&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"article"%2C"sourceId"%3A"277664818"})，而 Promise.then 是微任务。
+1. 首先: `setTimeout` 是[宏任务](https://www.zhihu.com/search?q=宏任务&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"article"%2C"sourceId"%3A"277664818"})，而 `Promise.then`  是微任务。
 
-这里的 new Promise() 是同步的，所以是立即执行的。
-
-
-
-
-
-
-
-## 异步编程方法
-
-**一、回调函数**
-
-`callback()` 是异步编程最基本的方法。
-
-假定有两个函数 `f1` 和 `f2` ，`f2()` 等待 `f1()` 的执行结果，如果 `f1()` 很耗时，可以把 `f2` 写成 `f1` 的回调函数。
-
-```js
-function f1(callback){
-  setTimeout(function () {
-    // f1的任务代码
-
-    callback();   // f2 被写成了 callback()  , 1 s 后执行 callback，这里可能没有等 f1 执行完就开始执行了。
-  }, 1000);
-}
+```
+output : 1
 ```
 
-执行代码就变成下面这样：
+2. ` new Promise() ` 是同步的，所以立即执行  ;  `.then` 被分发到微任务 Event Queue 中 , 记为 `then1`
 
-```js
-　f1(f2);
+3. 往下同步代码输出 5 ; 
+
+```
+output : 1 2 5
 ```
 
-采用这种方式，把同步操作变成了异步操作，`f1` 不会堵塞程序运行，相当于先执行程序的主要逻辑，将耗时的操作推迟执行。
+4. 第一轮事件循环**即将**结束。
+   - 观察有无微任务 : 执行 `then1` ; 至此 , 第一轮事件循环结束。
 
-回调函数的优点是简单、容易理解和部署，缺点是不利于代码的阅读和维护，各个部分之间高度[耦合](https://en.wikipedia.org/wiki/Coupling_(computer_programming))（Coupling），流程会很混乱，而且每个任务只能指定一个回调函数。
-
-
-
-**二、事件监听**
-
-另一种思路是采用事件驱动模式。任务的执行不取决于代码的顺序，而取决于某个事件是否发生。
-
-还是以 `f1` 和 `f2` 为例。首先，为 `f1` 绑定一个事件（这里采用的 jQuery 的[写法](https://api.jquery.com/on/)）。
-
-```js
-　　f1.on('done', f2);
+```bash
+output : 1 2 5 3
 ```
 
-上面这行代码的意思是，当 `f1` 发生 done 事件，就执行 `f2` 。 对 `f1` 进行改写：
-
-```js
-function f1(){
-  setTimeout(function () {
-    // f1的任务代码
-    f1.trigger('done');
-  }, 1000);           // 等 1 s ，就触发 done 事件。
-}
-```
-
-`f1.trigger('done')` 表示，执行完成后，立即触发 done 事件，从而开始执行 `f2` 。
-
-这种方法的优点是比较容易理解，可以绑定多个事件，每个事件可以指定多个回调函数，而且可以**去耦合**  (Decoupling），有利于实现模块化。缺点是整个程序都要变成事件驱动型，运行流程会变得很不清晰。
+5. 发现  `setTimeout1` 宏任务，开始第二轮事件循环：
+   - 遇到 clg, 直接输出 `setTimeout...`，没有微任务，第二轮事件循环结束。
 
 
 
-**三、发布/订阅**
-
-上一节的"事件"，完全可以理解成"信号"。
-
-我们假定，存在一个"信号中心"，某个任务执行完成，就向信号中心"发布"（publish）一个信号，其他任务可以向信号中心"订阅"（subscribe）这个信号，从而知道什么时候自己可以开始执行。这就叫做["发布/订阅模式"](https://en.wikipedia.org/wiki/Publish-subscribe_pattern)（publish-subscribe pattern），又称["观察者模式"](https://en.wikipedia.org/wiki/Observer_pattern)（observer pattern）。
-
-这个模式有多种[实现](https://msdn.microsoft.com/en-us/magazine/hh201955.aspx)，下面采用的是Ben Alman的[Tiny Pub/Sub](https://gist.github.com/661855)，这是jQuery的一个插件。
-
-首先，f2 向 "信号中心" jQuery 订阅 "done" 信号。
-
-```js
-　jQuery.subscribe("done", f2);
-```
-
-然后，f1进行如下改写：
-
-```js
-　　function f1(){
-
-　　　　setTimeout(function () {
-　　　　　　// f1的任务代码
-　　　　　　**jQuery.publish("done");**
-　　　　}, 1000);
-　　}
-```
 
 
 
-`jQuery.publish("done") `的意思是，`f1` 执行完成后，向"信号中心"jQuery发布"done"信号，从而引发f2的执行。
 
-此外，`f2` 完成执行后，也可以取消订阅（`unsubscribe`）。
+### 3.2 在微任务中创建微任务
 
-```js
-　jQuery.unsubscribe("done", f2);
-```
+感觉搞的有点复杂 , 不管了.
 
+https://zhuanlan.zhihu.com/p/139967525
 
 
-这种方法的性质与"事件监听"类似，但是明显优于后者。因为我们可以通过查看"消息中心"，了解存在多少信号、每个信号有多少订阅者，从而监控程序的运行。
+
+
+
+
 
 
 
@@ -1219,10 +1157,13 @@ console.log ('All done!');
 
 # async、await
 
+## 实例热身
+
 async : 
 
 1. 函数的返回值为 promise 对象
 2. promise 对象的结果由 async 函数执行的返回值决定
+3. 在函数开头添加 async 使其成为异步函数
 
 ```js
 // 如下代码 : 
@@ -1347,17 +1288,23 @@ main();
 
 
 
+## async / await 本质
+
+是 generator 的语法糖
 
 
-async函数是 [`AsyncFunction`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/AsyncFunction) 构造函数的实例， 并且其中允许使用`await`关键字。`async`和`await`关键字让我们可以用一种更简洁的方式写出基于[`Promise`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise)的异步行为，而无需刻意地链式调用 `promise`。
 
-在函数开头添加 async 使其成为异步函数：
 
-```js
-async function myFunction() {
-  // This is an async function
-}
-```
+
+
+
+# /
+
+# /
+
+# /
+
+# 待整理
 
 在 async function 中，可以在调用返回 Promise 的函数之前使用 `await` 关键字。
 
@@ -1516,3 +1463,108 @@ Promise.all([promise1, promise2, promise3]).then((values) => {
 
 
 说明 :  此方法在集合多个 `promise` 的返回结果时很有用。
+
+
+
+
+
+
+
+
+
+## 异步编程方法
+
+**一、回调函数**
+
+`callback()` 是异步编程最基本的方法。
+
+假定有两个函数 `f1` 和 `f2` ，`f2()` 等待 `f1()` 的执行结果，如果 `f1()` 很耗时，可以把 `f2` 写成 `f1` 的回调函数。
+
+```js
+function f1(callback){
+  setTimeout(function () {
+    // f1的任务代码
+
+    callback();   // f2 被写成了 callback()  , 1 s 后执行 callback，这里可能没有等 f1 执行完就开始执行了。
+  }, 1000);
+}
+```
+
+执行代码就变成下面这样：
+
+```js
+　f1(f2);
+```
+
+采用这种方式，把同步操作变成了异步操作，`f1` 不会堵塞程序运行，相当于先执行程序的主要逻辑，将耗时的操作推迟执行。
+
+回调函数的优点是简单、容易理解和部署，缺点是不利于代码的阅读和维护，各个部分之间高度[耦合](https://en.wikipedia.org/wiki/Coupling_(computer_programming))（Coupling），流程会很混乱，而且每个任务只能指定一个回调函数。
+
+
+
+**二、事件监听**
+
+另一种思路是采用事件驱动模式。任务的执行不取决于代码的顺序，而取决于某个事件是否发生。
+
+还是以 `f1` 和 `f2` 为例。首先，为 `f1` 绑定一个事件（这里采用的 jQuery 的[写法](https://api.jquery.com/on/)）。
+
+```js
+　　f1.on('done', f2);
+```
+
+上面这行代码的意思是，当 `f1` 发生 done 事件，就执行 `f2` 。 对 `f1` 进行改写：
+
+```js
+function f1(){
+  setTimeout(function () {
+    // f1的任务代码
+    f1.trigger('done');
+  }, 1000);           // 等 1 s ，就触发 done 事件。
+}
+```
+
+`f1.trigger('done')` 表示，执行完成后，立即触发 done 事件，从而开始执行 `f2` 。
+
+这种方法的优点是比较容易理解，可以绑定多个事件，每个事件可以指定多个回调函数，而且可以**去耦合**  (Decoupling），有利于实现模块化。缺点是整个程序都要变成事件驱动型，运行流程会变得很不清晰。
+
+
+
+**三、发布/订阅**
+
+上一节的"事件"，完全可以理解成"信号"。
+
+我们假定，存在一个"信号中心"，某个任务执行完成，就向信号中心"发布"（publish）一个信号，其他任务可以向信号中心"订阅"（subscribe）这个信号，从而知道什么时候自己可以开始执行。这就叫做["发布/订阅模式"](https://en.wikipedia.org/wiki/Publish-subscribe_pattern)（publish-subscribe pattern），又称["观察者模式"](https://en.wikipedia.org/wiki/Observer_pattern)（observer pattern）。
+
+这个模式有多种[实现](https://msdn.microsoft.com/en-us/magazine/hh201955.aspx)，下面采用的是Ben Alman的[Tiny Pub/Sub](https://gist.github.com/661855)，这是jQuery的一个插件。
+
+首先，f2 向 "信号中心" jQuery 订阅 "done" 信号。
+
+```js
+　jQuery.subscribe("done", f2);
+```
+
+然后，f1进行如下改写：
+
+```js
+　　function f1(){
+
+　　　　setTimeout(function () {
+　　　　　　// f1的任务代码
+　　　　　　**jQuery.publish("done");**
+　　　　}, 1000);
+　　}
+```
+
+
+
+`jQuery.publish("done") `的意思是，`f1` 执行完成后，向"信号中心"jQuery发布"done"信号，从而引发f2的执行。
+
+此外，`f2` 完成执行后，也可以取消订阅（`unsubscribe`）。
+
+```js
+　jQuery.unsubscribe("done", f2);
+```
+
+
+
+这种方法的性质与"事件监听"类似，但是明显优于后者。因为我们可以通过查看"消息中心"，了解存在多少信号、每个信号有多少订阅者，从而监控程序的运行。

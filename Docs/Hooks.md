@@ -2590,3 +2590,44 @@ Blur的作用：
 
 
 
+# React hook form
+
+表单状态管理曾经一直是让前端头疼的问题，错误提示，校验规则，动态表单，重置。。。搞得人头大。好在近几年也出现了不少好的社区方案 , 比如 [Formik](https://formik.org/docs/overview), [react-hook-form](https://github.com/react-hook-form/react-hook-form), [react-final-form](https://www.cnblogs.com/imgss/p/react-final-form)等等，今天我们来谈谈其中的 react-hook-form。
+
+>  React hook form 是一个关于表单的 hook，有点像 Formik 和 Redux form，但是比它们更好！
+>
+> 凭借其更简单的语法、速度、更少的重新渲染和更好的可维护性，它开始在 GitHub 中登顶。
+>
+> 它体积小，注重性能。这个库甚至提供了它的表单生成器，这很棒!
+>
+> 在 React hook 中的库，它的 star 量最高，有 14.8k.
+
+使用 `useForm` 返回的 register 函数，可以很方便地使用原生 html 元素构建一个表单
+
+
+
+`使用示例:` 
+
+```js
+import React from "react";
+import { useForm } from "react-hook-form";
+
+function App() {
+  const { register, handleSubmit, errors } = useForm();
+  const onSubmit = (data) => {
+    // logs {firstName:"exampleFirstName", lastName:"exampleLastName"}
+    console.log(data);
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input name="firstName" ref={register} />
+      <input name="lastName" ref={register({ required: true })} />
+      {errors.lastName && <span>"Last name is a required field."</span>}
+      <input name="age" ref={register({ required: true })} />
+      {errors.age && <span>"Please enter number for age."</span>}
+      <input type="submit" />
+    </form>
+  );
+}
+```
