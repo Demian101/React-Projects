@@ -1,8 +1,12 @@
+[TOC]
+
 https://course-api.com/react-tours-project
 
 https://github.com/john-smilga/react-projects
 
 https://react-projects.netlify.app/
+
+
 
 ## 1. Birthday Reminder
 
@@ -294,7 +298,7 @@ export default App
 
 
 
-## 3. Reviews (卡片轮播)
+## 3. 卡片轮播 Reviews
 
 ![](http://imagesoda.oss-cn-beijing.aliyuncs.com/Sodaoo/2022-05-21-QQ20220521-210250-HD.gif)
 

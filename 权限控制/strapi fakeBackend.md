@@ -1,3 +1,36 @@
+# 这个 Redux 项目感觉好劣质啊..
+
+> 还行，还行 。。
+
+
+
+```bash
+# 启动后端
+cd ./fakeBackend
+npm run start  // -> strapi start fake-backend at http://localhost:1337
+
+# 启动前端：
+cd ../frontend
+npm run start
+
+# 登录：
+os@qe.com
+os@qe.com
+os@qe.com
+
+# 或者直接重新注册一个 ....
+```
+
+
+
+
+
+
+
+
+
+## 安装 fake 后端 strapi
+
 npm
 
 ```
@@ -155,4 +188,4 @@ Strapi的使用起来并不复杂，大体步骤如下：
 5. 添加数据
 6. 设置权限
 
-当然我们现在使用它的主要目的并不是将它使用到生产环境中，而是让它为我们测试React提供接口，所以它更多的功能我们暂且先放到一边，后边的课程中，我们会根据需要在对Strapi的相关知识进行扩充。
+当然我们现在使用它的主要目的并不是将它使用到生产环境中，而是让它为我们测试React提供接口，所以它更多的功能我们暂且先放到一边，后边的课程中，我们会根据需要在对Strapi的相关知识进行扩充。	

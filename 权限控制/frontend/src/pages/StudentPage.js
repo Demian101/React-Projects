@@ -1,12 +1,8 @@
-import React from 'react';
+import React from "react";
 import StudentList from "../components/Student/StudentList";
 
 const StudentPage = () => {
-    return (
-        <div>
-            <StudentList/>
-        </div>
-    );
+  return <StudentList />;
 };
 
 export default StudentPage;
