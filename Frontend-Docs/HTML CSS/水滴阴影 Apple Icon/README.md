@@ -1,1 +1,0 @@
-# water-effect-logo
